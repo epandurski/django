@@ -138,9 +138,19 @@ class MultiPartParser(object):
         # Whether or not to signal a file-completion at the beginning of the loop.
         old_field_name = None
         counters = [0] * len(handlers)
+        parts_count, max_parts_count = 0, settings.MAX_MULTIPART_POST_PARTS
 
         try:
             for item_type, meta_data, field_stream in Parser(stream, self._boundary):
+                if item_type != RAW:
+                    parts_count += 1
+                if max_parts_count is not None and parts_count > max_parts_count:
+                    # A malicious large POST request, containing lots
+                    # of parts can be dangerous because it may consume
+                    # too much memory, or call too many expensive
+                    # upload handlers.
+                    raise SuspiciousMultipartForm("The request contains too many parts.")
+
                 if old_field_name:
                     # We run this at the beginning of the next loop
                     # since we cannot be sure a file is complete until

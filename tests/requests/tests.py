@@ -267,6 +267,36 @@ class RequestsTests(SimpleTestCase):
         self.assertRaises(RawPostDataException, lambda: request.body)
         self.assertEqual(request.POST, {})
 
+    @override_settings(MAX_URLENCODED_POST_VALUES=1)
+    def test_too_many_urlencoded_values(self):
+        """
+        Construction of POST fails when the payload has too many values.
+        """
+        payload = FakePayload('name1=value1&name2=value2')
+        request = WSGIRequest({'REQUEST_METHOD': 'POST',
+                               'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                               'CONTENT_LENGTH': len(payload),
+                               'wsgi.input': payload})
+        self.assertRaises(SuspiciousOperation, lambda: request.POST)
+
+    @override_settings(MAX_MULTIPART_POST_PARTS=0)
+    def test_too_many_multipart_post_parts(self):
+        """
+        Construction of POST fails when the payload has too many parts.
+        """
+        payload = FakePayload("\r\n".join([
+                '--boundary',
+                'Content-Disposition: form-data; name="name"',
+                '',
+                'value',
+                '--boundary--'
+                '']))
+        request = WSGIRequest({'REQUEST_METHOD': 'POST',
+                               'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
+                               'CONTENT_LENGTH': len(payload),
+                               'wsgi.input': payload})
+        self.assertRaises(SuspiciousOperation, lambda: request.POST)
+
     def test_non_ascii_POST(self):
         payload = FakePayload(urlencode({'key': 'España'}))
         request = WSGIRequest({

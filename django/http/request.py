@@ -14,7 +14,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core import signing
-from django.core.exceptions import DisallowedHost, ImproperlyConfigured
+from django.core.exceptions import DisallowedHost, ImproperlyConfigured, SuspiciousOperation
 from django.core.files import uploadhandler
 from django.http.multipartparser import MultiPartParser, MultiPartParserError
 from django.utils import six
@@ -245,6 +245,12 @@ class HttpRequest(object):
                 # self._mark_post_parse_error()
                 raise
         elif self.META.get('CONTENT_TYPE', '').startswith('application/x-www-form-urlencoded'):
+            max_values = settings.MAX_URLENCODED_POST_VALUES
+            if max_values is not None and self.body.count(b'&') >= max_values:
+                # A malicious large POST request, containing lots of
+                # short name-value pairs can be dangerous because its
+                # QueryDict may consume too much memory.
+                raise SuspiciousOperation('The request contains too many values.')
             self._post, self._files = QueryDict(self.body, encoding=self._encoding), MultiValueDict()
         else:
             self._post, self._files = QueryDict('', encoding=self._encoding), MultiValueDict()
