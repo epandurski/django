@@ -267,7 +267,7 @@ class RequestsTests(SimpleTestCase):
         self.assertRaises(RawPostDataException, lambda: request.body)
         self.assertEqual(request.POST, {})
 
-    @override_settings(MAX_URLENCODED_POST_VALUES=1)
+    @override_settings(URLENCODED_POST_MAX_FIELDS=1)
     def test_too_many_urlencoded_values(self):
         """
         Construction of POST fails when the payload has too many values.
@@ -279,7 +279,7 @@ class RequestsTests(SimpleTestCase):
                                'wsgi.input': payload})
         self.assertRaises(SuspiciousOperation, lambda: request.POST)
 
-    @override_settings(MAX_MULTIPART_POST_PARTS=0)
+    @override_settings(MULTIPART_POST_MAX_PARTS=-10)
     def test_too_many_multipart_post_parts(self):
         """
         Construction of POST fails when the payload has too many parts.

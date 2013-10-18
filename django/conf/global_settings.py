@@ -445,14 +445,14 @@ SECURE_PROXY_SSL_HEADER = None
 
 # The maximum allowed number of name-value pairs that an incoming
 # "application/x-www-form-urlencoded" POST request can
-# contain. "SuspiciousOperation" error is will be raised if this
-# number is exceeded.
-MAX_URLENCODED_POST_VALUES = None
+# contain. "SuspiciousOperation" error will be raised if this number
+# is exceeded.
+URLENCODED_POST_MAX_FIELDS = None
 
 # The maximum allowed number of parts that an incoming
 # "multipart/form-data" request can contain. "SuspiciousMultipartForm"
 # error will be raised if this number is exceeded.
-MAX_MULTIPART_POST_PARTS = None
+MULTIPART_POST_MAX_PARTS = None
 
 ##############
 # MIDDLEWARE #

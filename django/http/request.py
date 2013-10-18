@@ -245,7 +245,7 @@ class HttpRequest(object):
                 # self._mark_post_parse_error()
                 raise
         elif self.META.get('CONTENT_TYPE', '').startswith('application/x-www-form-urlencoded'):
-            max_values = settings.MAX_URLENCODED_POST_VALUES
+            max_values = settings.URLENCODED_POST_MAX_FIELDS
             if max_values is not None and self.body.count(b'&') >= max_values:
                 # A malicious large POST request, containing lots of
                 # short name-value pairs can be dangerous because its

@@ -138,12 +138,16 @@ class MultiPartParser(object):
         # Whether or not to signal a file-completion at the beginning of the loop.
         old_field_name = None
         counters = [0] * len(handlers)
-        parts_count, max_parts_count = 0, settings.MAX_MULTIPART_POST_PARTS
+
+        # Because we may have bogus "RAW" parts at the beginning and
+        # at the end of the request, we start counting from -2. As a
+        # result, the part count that we get may be slightly smaller
+        # than the real count. But this is not a problem.
+        parts_count, max_parts_count = -2, settings.MULTIPART_POST_MAX_PARTS
 
         try:
             for item_type, meta_data, field_stream in Parser(stream, self._boundary):
-                if item_type != RAW:
-                    parts_count += 1
+                parts_count += 1
                 if max_parts_count is not None and parts_count > max_parts_count:
                     # A malicious large POST request, containing lots
                     # of parts can be dangerous because it may consume
